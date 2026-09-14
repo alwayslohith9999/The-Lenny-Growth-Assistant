@@ -207,6 +207,17 @@ We render HTML/CSS artifacts inside an `<iframe>` configured with:
 - **Cookie Access Test:** Executed `document.cookie` inside sandboxed iframe $\rightarrow$ Returns empty string `""`.
 - **API Request Test:** Executed `fetch('http://localhost:8000/sessions')` inside sandboxed iframe $\rightarrow$ Blocked by browser CORS due to `null` Origin header.
 
+## 8. Observability & Resilience: Failure Mode Mapping
+
+| Failure Mode | Root Cause | System Detection | User-Facing Handling & Recovery |
+| :--- | :--- | :--- | :--- |
+| **Missing Cloud API Key** | `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` unconfigured. | `get_llm_provider()` throws configuration error. | Automatically falls back to local `OllamaProvider` if `OLLAMA_FALLBACK=true`; otherwise returns `503 Service Unavailable` error envelope with key setup instructions. |
+| **Ollama Service Unreachable** | Ollama container offline or port `11434` blocked. | HTTP connection timeout / refused error. | Transparently falls back to `OfflineSynthesisProvider` which synthesizes grounded answers directly from retrieved context chunks. |
+| **Model Timeout** | Inference call takes $> 60\text{s}$. | `httpx.TimeoutException` caught in provider block. | Structured `502 Bad Gateway` error returned: *"LLM Provider timed out. Please retry your request."* |
+| **Empty Retrieval Results** | User query has no semantic match in index. | `retrieve_relevant_chunks` returns `[]`. | Returns explicit grounded response: *"I searched Lenny's Podcast transcripts, but this topic is not covered in the ingested episodes."* |
+| **Postgres Connection Failure** | Database container restarting or connection lost. | SQLAlchemy engine connection exception. | Database healthcheck in `/health` sets `status: degraded`. Endpoints return `500 Internal Server Error` with structured JSON diagnostic. |
+
+
 
 ## 8. Deployment Topology (Docker Compose)
 
