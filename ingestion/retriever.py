@@ -13,23 +13,28 @@ def retrieve_relevant_chunks(db: DBSession, query: str, top_k: int = 4) -> List[
     chunks = db.query(TranscriptChunk).all()
 
     scored_chunks = []
+    query_words = set(w.lower() for w in query.split() if len(w) > 3)
+    
     for chunk in chunks:
         chunk_vec = chunk.embedding or []
-        score = cosine_similarity(query_vec, chunk_vec)
+        base_score = cosine_similarity(query_vec, chunk_vec)
         
-        # Word overlap boost for keyword accuracy
-        query_words = set(query.lower().split())
-        chunk_words = set(chunk.content.lower().split())
+        chunk_words = set(w.lower() for w in chunk.content.split() if len(w) > 3)
         overlap = len(query_words.intersection(chunk_words))
-        score += (overlap * 0.05)
+        
+        if overlap == 0 and base_score < 0.1:
+            score = 0.0
+        else:
+            score = base_score + (overlap * 0.1)
 
         scored_chunks.append((score, chunk))
+
 
     scored_chunks.sort(key=lambda x: x[0], reverse=True)
 
     results = []
     for score, chunk in scored_chunks[:top_k]:
-        if score > 0.05:  # Relevance threshold
+        if score >= 0.15:  # Relevance threshold for grounded context match
             results.append({
                 "chunk_id": chunk.id,
                 "episode_id": chunk.episode_id,
@@ -43,3 +48,4 @@ def retrieve_relevant_chunks(db: DBSession, query: str, top_k: int = 4) -> List[
             })
 
     return results
+
