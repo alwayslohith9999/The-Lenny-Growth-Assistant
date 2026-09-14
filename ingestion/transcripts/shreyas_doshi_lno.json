@@ -1,0 +1,18 @@
+{
+  "episode_id": "ep-103",
+  "episode_title": "Shreyas Doshi on LNO Framework, Product Leadership, and Prioritization",
+  "guest_name": "Shreyas Doshi",
+  "episode_url": "https://www.lennyspodcast.com/shreyas-doshi-lno-framework",
+  "transcript": [
+    {
+      "timestamp_start": "00:04:00",
+      "timestamp_end": "00:11:20",
+      "text": "Lenny: Shreyas, your LNO framework is loved by thousands of product managers. Can you walk us through how it works?\n\nShreyas Doshi: Most PMs suffer from burnout because they try to do every task at 100% excellence. That is impossible. The LNO framework categorizes tasks into three buckets:\n1. Leverage Tasks (L): High-leverage work where exceptional quality generates asymmetric impact (e.g. core product vision, critical PRDs, pricing strategy). Give these 100-120% effort.\n2. Neutral Tasks (N): Work that must be done well enough, but extra effort yields diminishing returns (e.g. weekly updates, standard syncs). Give these 80% effort.\n3. Overhead Tasks (O): Low-impact administrative work. Give these 50-60% effort or automate/delegate them."
+    },
+    {
+      "timestamp_start": "00:11:21",
+      "timestamp_end": "00:18:50",
+      "text": "Lenny: How should PMs handle stakeholder alignment and pushback on roadmaps?\n\nShreyas Doshi: Focus on problem alignment before solution debate. 90% of roadmap friction happens because stakeholders disagree on the underlying problem prioritization, not the feature design. Frame choices clearly using trade-off matrices: 'If we build Feature A to satisfy Sales, we must defer Feature B which addresses 40% of customer churn.'"
+    }
+  ]
+}

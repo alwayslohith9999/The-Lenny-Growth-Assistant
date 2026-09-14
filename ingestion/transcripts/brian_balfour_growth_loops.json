@@ -1,0 +1,18 @@
+{
+  "episode_id": "ep-102",
+  "episode_title": "Brian Balfour on Growth Loops, Retention, and Market Fit",
+  "guest_name": "Brian Balfour",
+  "episode_url": "https://www.lennyspodcast.com/brian-balfour-growth-loops",
+  "transcript": [
+    {
+      "timestamp_start": "00:03:10",
+      "timestamp_end": "00:09:40",
+      "text": "Lenny: Brian, Reforge is famous for pioneering the concept of Growth Loops over traditional Funnels. Why are growth loops so critical?\n\nBrian Balfour: Funnels create linear thinking. Input goes in the top, output comes out the bottom, and the energy is lost. Growth loops are closed systems where the output of one user action feeds back into the input for the next user. There are two primary categories: Viral/Referral Loops (where user activity inherently invites or notifies other users) and Content/SEO Loops (where user activity generates public content indexed by search engines, driving new user acquisition)."
+    },
+    {
+      "timestamp_start": "00:09:41",
+      "timestamp_end": "00:16:15",
+      "text": "Lenny: How do you measure if retention is truly healthy for a product?\n\nBrian Balfour: You need to inspect your retention curve flattening. Take cohorts by sign-up month. If the retention curve asymptotically flattens parallel to the x-axis after 30-90 days, you have a baseline of retained users. If it continuously leaks down to zero, no amount of growth hacking or top-of-funnel acquisition will save your company. Retention is the foundation of growth. Product-Market Fit (PMF) is strictly defined by retention flattening."
+    }
+  ]
+}

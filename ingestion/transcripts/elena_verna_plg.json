@@ -1,0 +1,23 @@
+{
+  "episode_id": "ep-101",
+  "episode_title": "Elena Verna on PLG, Growth Loops, and B2B Monetization",
+  "guest_name": "Elena Verna",
+  "episode_url": "https://www.lennyspodcast.com/elena-verna-on-plg",
+  "transcript": [
+    {
+      "timestamp_start": "00:02:15",
+      "timestamp_end": "00:07:30",
+      "text": "Lenny: Elena, welcome to the podcast. Let's start with Product-Led Growth (PLG) vs Sales-Led motions. How should early-stage B2B SaaS companies decide which motion to start with?\n\nElena Verna: Thanks for having me Lenny! The biggest mistake founders make is thinking PLG and Sales-Led are mutually exclusive. PLG is an acquisition and retention engine, while Sales-Led is a monetization acceleration engine. If your product has a quick time-to-value (TTV) under 5 minutes, you must lead with PLG. You let the end-user experience the core value proposition for free or via a trial before introducing any human touch. Sales comes in later when you see enterprise usage thresholds triggered inside an account."
+    },
+    {
+      "timestamp_start": "00:07:31",
+      "timestamp_end": "00:13:45",
+      "text": "Lenny: What metrics indicate that a PLG company is ready to layer on enterprise sales?\n\nElena Verna: Look for three specific signals: First, account-level user clustering. If 10+ employees with the same @company.com domain are active on free plans, that's your cue. Second, feature usage walls — when users attempt to configure SAML/SSO or audit logs. Third, organic expansion requests. When users start asking 'Can we pay via invoice instead of credit card?', your product has already won the bottom-up battle. You don't need a massive sales team to start; 1-2 product specialists who reach out to high-usage accounts will dramatically increase conversion rates."
+    },
+    {
+      "timestamp_start": "00:13:46",
+      "timestamp_end": "00:19:20",
+      "text": "Elena Verna: Monetization strategy in PLG hinges on setting the right paywall boundaries. Never put your core habit-loop features behind a paywall. If users can't form a daily habit, they will churn before ever seeing your upgrade screen. Put scale boundaries (e.g., number of seats, volume of data, enterprise security controls like SOC2 compliance and SSO) behind the paywall, not utility boundaries."
+    }
+  ]
+}
