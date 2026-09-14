@@ -177,7 +177,9 @@ When a user submits a message to `POST /sessions/{id}/messages`:
   - `anthropic`: `AnthropicProvider` (Claude 3.5 Sonnet / Haiku).
   - `openai`: `OpenAIProvider` (GPT-4o / GPT-4o-mini).
   - `ollama`: `OllamaProvider` (llama3.2 / mistral / qwen2.5).
-- **Fallback Logic:** If primary provider (e.g. `anthropic`) fails due to timeout, rate limit, or invalid API key, the system logs structured error warnings and transparently falls back to `OllamaProvider` if `OLLAMA_FALLBACK=true`.
+- **Fallback Logic:** Implemented in `backend/app/llm/factory.py`. If primary provider (e.g. `anthropic`) fails due to timeout, rate limit, or invalid API key, `generate_with_fallback()` logs structured error warnings and transparently falls back to `OllamaProvider` if `OLLAMA_FALLBACK=true`.
+- **UI Config Exposure:** Exposed via `GET /config` and `GET /health` endpoints so the frontend displays active execution mode in real time.
+
 
 ## 7. Security: Artifact Isolation & HTML Sandboxing
 

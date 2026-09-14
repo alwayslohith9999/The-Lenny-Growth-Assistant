@@ -84,6 +84,17 @@ def health_check(db: DBSession = Depends(get_db)):
     )
 
 
+@app.get("/config")
+def get_config():
+    return {
+        "active_provider": settings.LLM_PROVIDER,
+        "active_model": settings.LLM_MODEL,
+        "ollama_fallback": settings.OLLAMA_FALLBACK,
+        "ollama_host": settings.OLLAMA_HOST
+    }
+
+
+
 @app.post("/sessions", response_model=SessionResponse, status_code=status.HTTP_201_CREATED)
 def create_session(req: SessionCreateRequest, db: DBSession = Depends(get_db)):
     new_session = SessionModel(
