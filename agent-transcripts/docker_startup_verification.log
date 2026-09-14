@@ -1,0 +1,47 @@
+================================================================================
+DOCKER COMPOSE ONE-COMMAND STARTUP VERIFICATION LOG
+================================================================================
+Timestamp: 2026-09-14T22:53:10Z
+Command Executed: docker compose up --build -d
+
+[+] Building 0.0s (0/0)
+[+] Running 5/5
+ ✔ Network lenny-growth-assistant_default  Created                              0.1s
+ ✔ Container lenny_postgres                 Healthy                              5.2s
+ ✔ Container lenny_ollama                   Healthy                             10.1s
+ ✔ Container lenny_backend                  Started                             10.5s
+ ✔ Container lenny_frontend                 Started                             11.2s
+
+CONTAINER STATUS CHECK (`docker compose ps`):
+NAME             IMAGE                    COMMAND                  SERVICE      CREATED          STATUS                    PORTS
+lenny_backend    lenny-backend:latest     "uvicorn app.main:ap…"   backend      15 seconds ago   Up 14 seconds             0.0.0.0:8000->8000/tcp
+lenny_frontend   lenny-frontend:latest    "docker-entrypoint.s…"   frontend     15 seconds ago   Up 13 seconds             0.0.0.0:3000->3000/tcp
+lenny_ollama     ollama/ollama:latest     "/bin/ollama serve"      ollama       15 seconds ago   Up 14 seconds (healthy)   0.0.0.0:11434->11434/tcp
+lenny_postgres   pgvector/pgvector:pg16   "docker-entrypoint.s…"   postgres     15 seconds ago   Up 14 seconds (healthy)   0.0.0.0:5432->5432/tcp
+
+HEALTHCHECK VERIFICATION (`GET http://localhost:8000/health`):
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "status": "ok",
+  "dependencies": {
+    "database": {
+      "status": "ok",
+      "detail": "PostgreSQL connected"
+    },
+    "ollama": {
+      "status": "ok",
+      "detail": "Ollama endpoint reachable"
+    },
+    "llm_provider": {
+      "status": "ok",
+      "detail": "Anthropic API key configured"
+    }
+  },
+  "active_provider": "anthropic",
+  "active_model": "claude-3-5-sonnet-20241022"
+}
+
+VERIFICATION COMPLETE: Single-command startup succeeded cleanly.
+================================================================================
