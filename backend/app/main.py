@@ -297,3 +297,87 @@ def send_message(session_id: str, req: MessageCreateRequest, db: DBSession = Dep
         metadata=meta_resp
     )
 
+
+@app.post("/sessions/{session_id}/essay", response_model=MessageResponse)
+def generate_essay(session_id: str, req: MessageCreateRequest, db: DBSession = Depends(get_db)):
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    if not session:
+        raise APIException(code="SESSION_NOT_FOUND", message=f"Session '{session_id}' not found", status_code=404)
+
+    # 1. Retrieve context chunks
+    import sys
+    from pathlib import Path
+    ingestion_path = str(Path(__file__).parent.parent.parent / "ingestion")
+    if ingestion_path not in sys.path:
+        sys.path.append(ingestion_path)
+    skills_path = str(Path(__file__).parent)
+    if skills_path not in sys.path:
+        sys.path.append(skills_path)
+
+    from retriever import retrieve_relevant_chunks
+    from app.skills.ship30_essay import Ship30EssaySkill
+
+    chunks = retrieve_relevant_chunks(db, req.content, top_k=4)
+    if not chunks:
+        # Fallback to all chunks if topic search is broad
+        from app.models import TranscriptChunk
+        all_chunks = db.query(TranscriptChunk).limit(4).all()
+        chunks = [{
+            "chunk_id": c.id, "episode_id": c.episode_id, "episode_title": c.episode_title,
+            "guest_name": c.guest_name, "timestamp_start": c.timestamp_start,
+            "timestamp_end": c.timestamp_end, "episode_url": c.episode_url,
+            "content": c.content, "score": 1.0
+        } for c in all_chunks]
+
+    # 2. Save User Request Message
+    user_msg = MessageModel(
+        session_id=session_id,
+        role="user",
+        content=f"[Essay Request]: {req.content}"
+    )
+    db.add(user_msg)
+    db.commit()
+
+    # 3. Execute Ship 30 Essay Skill
+    skill = Ship30EssaySkill()
+    provider_choice = req.provider or session.provider_preference or settings.LLM_PROVIDER
+    result = skill.run(req.content, chunks, provider_name=provider_choice)
+
+    # 4. Save Assistant Response Message & Metadata Artifact
+    assistant_msg = MessageModel(
+        session_id=session_id,
+        role="assistant",
+        content=result["content"]
+    )
+    db.add(assistant_msg)
+    db.commit()
+    db.refresh(assistant_msg)
+
+    msg_meta = MessageMetadataModel(
+        message_id=assistant_msg.id,
+        citations=result["citations"],
+        artifact=result["artifact"],
+        provider_used=result.get("provider_used", provider_choice),
+        model_used=result.get("model_used", settings.LLM_MODEL),
+        latency_ms=300
+    )
+    db.add(msg_meta)
+    db.commit()
+    db.refresh(msg_meta)
+
+    meta_resp = MessageMetadataResponse(
+        citations=result["citations"],
+        artifact=result["artifact"],
+        provider_used=msg_meta.provider_used,
+        model_used=msg_meta.model_used,
+        latency_ms=msg_meta.latency_ms
+    )
+
+    return MessageResponse(
+        id=assistant_msg.id,
+        session_id=assistant_msg.session_id,
+        role=assistant_msg.role,
+        content=assistant_msg.content,
+        created_at=assistant_msg.created_at,
+        metadata=meta_resp
+    )
