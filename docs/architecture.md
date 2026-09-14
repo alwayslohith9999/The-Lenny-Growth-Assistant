@@ -186,16 +186,27 @@ When a user submits a message to `POST /sessions/{id}/messages`:
 ### Threat Model
 Generated HTML artifacts could contain malicious inline scripts, attempt cookie theft, access `localStorage`, or make forged network requests to the backend API (`same-origin`).
 
-### Mitigation Strategy
-1. **Sanitization:** All HTML content is sanitized on the client using `DOMPurify` before insertion.
-2. **Iframe Sandboxing:** Rendered in an `<iframe>` with strict sandbox flags:
-   ```html
-   <iframe sandbox="allow-scripts" srcdoc="..."></iframe>
-   ```
-   - **`allow-same-origin` is EXCLUDED:** Ensures the iframe runs in a unique `null` origin, completely preventing access to `window.parent`, cookies, `localStorage`, `sessionStorage`, or same-origin API requests.
-   - **`allow-forms` is EXCLUDED:** Prevents unauthorized form submissions.
-   - **CSP Header:** Synthetic Content Security Policy injected inside `srcdoc`:
-     `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';">`
+### Strategy Choice: Isolated `<iframe>` with Strict `sandbox="allow-scripts"`
+We render HTML/CSS artifacts inside an `<iframe>` configured with:
+```html
+<iframe sandbox="allow-scripts" srcdoc="..."></iframe>
+```
+
+#### Key Technical Decisions & Limits:
+1. **`allow-same-origin` is EXCLUDED:**
+   - By omitting `allow-same-origin`, the browser forces the iframe execution context into a unique, anonymous `null` origin.
+   - The artifact JS context CANNOT access `window.parent`, `window.localStorage`, `window.sessionStorage`, or cookies of the host application.
+   - Any `fetch('/api/...')` call from within the iframe treats the target as cross-origin and is blocked by CORS.
+2. **DOMPurify Sanitization:**
+   - Before passing raw HTML string to the iframe `srcdoc`, the string is sanitized via DOMPurify to strip `<script>` tags that attempt document domain elevation or inline payload tricks.
+3. **Raw Source Inspector:**
+   - The UI includes a visible mode toggle ("Rendered View" vs "Raw Source View") and a badge indicating active security status (`SANDBOXED_IFRAME_NULL_ORIGIN` or `SANITY_CHECKED_MARKDOWN`).
+
+### Verification & Testing
+- **LocalStorage Access Test:** Executed `localStorage.getItem('token')` inside sandboxed iframe $\rightarrow$ Throws `DOMException: Failed to read 'localStorage' from 'Window': Access is denied for this document.`
+- **Cookie Access Test:** Executed `document.cookie` inside sandboxed iframe $\rightarrow$ Returns empty string `""`.
+- **API Request Test:** Executed `fetch('http://localhost:8000/sessions')` inside sandboxed iframe $\rightarrow$ Blocked by browser CORS due to `null` Origin header.
+
 
 ## 8. Deployment Topology (Docker Compose)
 
