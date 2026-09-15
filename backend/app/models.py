@@ -1,20 +1,26 @@
+"""SQLAlchemy data models for Lenny Growth Assistant.
+
+Defines database schemas for users, sessions, messages, telemetry metadata,
+and indexed transcript chunks.
+"""
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Integer, JSON
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Integer, JSON, Index
 from sqlalchemy.orm import relationship
 from app.database import Base
 
 
-def generate_uuid():
+def generate_uuid() -> str:
+    """Generate a standard UUID4 string for primary keys."""
     return str(uuid.uuid4())
 
 
 class UserMetadata(Base):
+    """User profile record for multi-tenant and ownership support."""
     __tablename__ = "user_metadata"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    email = Column(String(255), unique=True, nullable=False)
+    email = Column(String(255), unique=True, nullable=False, index=True)
     full_name = Column(String(255), nullable=True)
     role = Column(String(50), default="user")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
@@ -24,10 +30,11 @@ class UserMetadata(Base):
 
 
 class Session(Base):
+    """Chat session conversation container."""
     __tablename__ = "sessions"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    user_id = Column(String(36), ForeignKey("user_metadata.id", ondelete="CASCADE"), nullable=True)
+    user_id = Column(String(36), ForeignKey("user_metadata.id", ondelete="CASCADE"), nullable=True, index=True)
     title = Column(String(255), nullable=False, default="New Growth Chat")
     provider_preference = Column(String(50), default="anthropic")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
@@ -38,23 +45,25 @@ class Session(Base):
 
 
 class Message(Base):
+    """Individual conversational message within a session."""
     __tablename__ = "messages"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    session_id = Column(String(36), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False)
+    session_id = Column(String(36), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False, index=True)
     role = Column(String(20), nullable=False)  # user, assistant, system
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True)
 
     session = relationship("Session", back_populates="messages")
     msg_metadata = relationship("MessageMetadata", back_populates="message", uselist=False, cascade="all, delete-orphan")
 
 
 class MessageMetadata(Base):
+    """Execution telemetry, citations, and generated artifacts associated with an assistant message."""
     __tablename__ = "message_metadata"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    message_id = Column(String(36), ForeignKey("messages.id", ondelete="CASCADE"), unique=True, nullable=False)
+    message_id = Column(String(36), ForeignKey("messages.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
     citations = Column(JSON, default=list)  # Array of {episode_title, timestamp, chunk_id, score}
     artifact = Column(JSON, nullable=True)   # {type: 'markdown'|'html', title: str, content: str}
     provider_used = Column(String(50), nullable=True)
@@ -68,10 +77,11 @@ class MessageMetadata(Base):
 
 
 class TranscriptChunk(Base):
+    """Chunked and embedded podcast transcript segment for grounded retrieval."""
     __tablename__ = "transcript_chunks"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    episode_id = Column(String(100), nullable=False)
+    episode_id = Column(String(100), nullable=False, index=True)
     episode_title = Column(String(255), nullable=False)
     episode_url = Column(String(500), nullable=True)
     guest_name = Column(String(255), nullable=True)
@@ -81,3 +91,7 @@ class TranscriptChunk(Base):
     embedding = Column(JSON, nullable=True)  # Store list of floats for portability
     metadata_json = Column(JSON, default=dict)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("idx_transcript_episode_time", "episode_id", "timestamp_start"),
+    )

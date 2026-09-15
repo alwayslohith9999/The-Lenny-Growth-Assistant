@@ -6,48 +6,105 @@ export function Sidebar({
   onSelectSession,
   onNewSession,
   onDeleteSession,
-  activeProvider
+  activeProvider,
+  isOpen,
+  onClose
 }) {
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <span className="logo-icon">⚡</span>
-        <h1 className="sidebar-title">Lenny Growth</h1>
-      </div>
-
-      <button className="new-chat-btn" onClick={onNewSession}>
-        <span>+</span> New Growth Chat
-      </button>
-
-      <div className="session-list">
-        {sessions.map((s) => (
-          <div
-            key={s.id}
-            className={`session-item ${s.id === activeSessionId ? 'active' : ''}`}
-            onClick={() => onSelectSession(s.id)}
-          >
-            <span className="session-title-text">{s.title || 'Growth Chat'}</span>
-            <button
-              className="delete-session-btn"
-              onClick={(e) => {
-                e.stopPropagation()
-                onDeleteSession(s.id)
-              }}
-              title="Delete session"
-            >
-              ✕
-            </button>
+    <>
+      {isOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        className={`sidebar ${isOpen ? 'open' : ''}`}
+        aria-label="Chat Sessions"
+      >
+        <div className="sidebar-header">
+          <div className="logo-group">
+            <span className="logo-icon" aria-hidden="true">⚡</span>
+            <h1 className="sidebar-title">Lenny Growth</h1>
           </div>
-        ))}
-      </div>
-
-      <div className="provider-badge-box">
-        <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>ACTIVE RUNTIME</div>
-        <div className="provider-status">
-          <span className="status-dot"></span>
-          <span>{activeProvider ? activeProvider.toUpperCase() : 'ANTHROPIC'}</span>
+          <button
+            className="sidebar-close-btn"
+            onClick={onClose}
+            aria-label="Close sidebar"
+          >
+            ✕
+          </button>
         </div>
-      </div>
-    </aside>
+
+        <button
+          className="new-chat-btn"
+          onClick={() => {
+            onNewSession()
+            if (onClose) onClose()
+          }}
+          aria-label="Start a new growth chat session"
+        >
+          <span aria-hidden="true">+</span> New Growth Chat
+        </button>
+
+        <nav className="session-list" aria-label="Previous sessions">
+          {sessions.length === 0 ? (
+            <div className="sidebar-empty">No chats yet</div>
+          ) : (
+            <ul className="session-ul">
+              {sessions.map((s) => {
+                const isActive = s.id === activeSessionId
+                return (
+                  <li key={s.id} className="session-li">
+                    <div
+                      className={`session-item ${isActive ? 'active' : ''}`}
+                      onClick={() => {
+                        onSelectSession(s.id)
+                        if (onClose) onClose()
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-current={isActive ? 'true' : undefined}
+                      aria-label={`Select session: ${s.title || 'Growth Chat'}`}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          onSelectSession(s.id)
+                          if (onClose) onClose()
+                        }
+                      }}
+                    >
+                      <span className="session-title-text">{s.title || 'Growth Chat'}</span>
+                      <button
+                        className="delete-session-btn"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (window.confirm(`Delete chat "${s.title || 'Growth Chat'}"?`)) {
+                            onDeleteSession(s.id)
+                          }
+                        }}
+                        aria-label={`Delete chat: ${s.title || 'Growth Chat'}`}
+                        title="Delete session"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </nav>
+
+        <div className="provider-badge-box">
+          <div className="provider-badge-label">ACTIVE RUNTIME</div>
+          <div className="provider-status">
+            <span className="status-dot" aria-hidden="true"></span>
+            <span>{activeProvider ? activeProvider.toUpperCase() : 'ANTHROPIC'}</span>
+          </div>
+        </div>
+      </aside>
+    </>
   )
 }

@@ -8,9 +8,11 @@ logger = logging.getLogger(__name__)
 
 
 class OllamaProvider(BaseLLMProvider):
+    """LLM provider implementation for local Ollama runtime."""
+
     def __init__(self, host: Optional[str] = None, model: Optional[str] = None):
         self.host = (host or settings.OLLAMA_HOST).rstrip('/')
-        self.model = model or settings.LLM_MODEL or "llama3.2"
+        self.model = model or settings.OLLAMA_MODEL or "llama3.2"
 
     def generate(self, messages: List[Dict[str, str]], system: Optional[str] = None) -> Dict[str, Any]:
         formatted_messages = []

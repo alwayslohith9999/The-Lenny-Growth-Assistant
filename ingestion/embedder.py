@@ -1,3 +1,4 @@
+import hashlib
 import math
 import re
 from typing import List
@@ -6,10 +7,19 @@ from typing import List
 VECTOR_DIM = 384
 
 
+def _deterministic_hash(word: str) -> int:
+    """Returns a deterministic 64-bit signed integer hash for a string."""
+    digest = hashlib.md5(word.encode("utf-8")).hexdigest()
+    val = int(digest[:16], 16)
+    if val >= (1 << 63):
+        val -= (1 << 64)
+    return val
+
+
 def text_to_vector(text: str, dim: int = VECTOR_DIM) -> List[float]:
     """
     Generates a normalized dense vector embedding representation for text.
-    Provides fast, reproducible semantic feature representations.
+    Provides fast, deterministic semantic feature representations across Python processes.
     """
     words = re.findall(r'\w+', text.lower())
     if not words:
@@ -17,9 +27,9 @@ def text_to_vector(text: str, dim: int = VECTOR_DIM) -> List[float]:
 
     vec = [0.0] * dim
     for word in words:
-        h = hash(word)
+        h = _deterministic_hash(word)
         idx = abs(h) % dim
-        sign = 1.0 if h > 0 else -1.0
+        sign = 1.0 if h >= 0 else -1.0
         vec[idx] += sign * 1.0
 
     # L2 normalize vector

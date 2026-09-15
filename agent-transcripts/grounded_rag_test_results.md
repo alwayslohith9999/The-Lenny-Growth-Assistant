@@ -1,6 +1,6 @@
 # Grounded Conversational RAG Test Results
 
-**Session ID:** `b66b75a7-1f96-45f8-9001-7f26388b5849`
+**Session ID:** `2bb361b6-7299-4abb-acd9-8f5cb48dd6a9`
 
 ## Clearly Answerable Question
 **User Query:** "What is Elena Verna's advice on PLG vs Sales-led motion?"
@@ -8,28 +8,35 @@
 **Assistant Response:**
 Based on Lenny's Podcast transcripts, here is the answer to your query: 'What is Elena Verna's advice on PLG vs Sales-led motion?':
 
-[Source 1]: Episode 'Elena Verna on PLG, Growth Loops, and B2B Monetization' by Elena Verna (00:02:15-00:07:30)
+[Source 1]: Episode 'Elena Verna on PLG, Growth Loops, and B2B Monetization' by Elena Verna (00:07:31-00:13:45)
+URL: https://www.lennyspodcast.com/elena-verna-on-plg
+Content: Lenny: What metrics indicate that a PLG company is ready to layer on enterprise sales?
+
+Elena Verna: Look for three specific signals: First, account-level user clustering. If 10+ employees with the same @company.com domain are active on free plans, that's your cue. Second, feature usage walls — when users attempt to configure SAML/SSO or audit logs. Third, organic expansion requests. When users start asking 'Can we pay via invoice instead of credit card?', your product has already won the bottom-up battle. You don't need a massive sales team to start; 1-2 product specialists who reach out to high-usage accounts will dramatically increase conversion rates.
+
+---
+[Source 2]: Episode 'Elena Verna on PLG, Growth Loops, and B2B Monetization' by Elena Verna (00:02:15-00:07:30)
 URL: https://www.lennyspodcast.com/elena-verna-on-plg
 Content: Lenny: Elena, welcome to the podcast. Let's start with Product-Led Growth (PLG) vs Sales-Led motions. How should early-stage B2B SaaS companies decide which motion to start with?
 
 Elena Verna: Thanks for having me Lenny! The biggest mistake founders make is thinking PLG and Sales-Led are mutually exclusive. PLG is an acquisition and retention engine, while Sales-Led is a monetization acceleration engine. If your product has a quick time-to-value (TTV) under 5 minutes, you must lead with PLG. You let the end-user experience the core value proposition for free or via a trial before introducing any human touch. Sales comes in later when you see enterprise usage thresholds triggered inside an account.
 
 ---
-[Source 2]: Episode 'Elena Verna on PLG, Growth Loops, and B2B Monetization' by Elena Verna (00:07:31-00:13:45)
+[Source 3]: Episode 'Elena Verna on PLG, Growth Loops, and B2B Monetization' by Elena Verna (00:13:46-00:19:20)
 URL: https://www.lennyspodcast.com/elena-verna-on-plg
-Content: Lenny: What metrics indicate that a PLG company is ready to layer on enterprise sales?
-
-Elena Verna: Look for three specific signals: First, account-level user clustering. If 10+ employees with the same @company.com domain are active on free plans, that's your cue. Second, feature usage walls — when users attempt to configure SAML/SSO or audit logs. Third, organic expansion requests. When users start asking 'Can we pay via invoice instead of credit card?', your product has already won the bottom-up battle. You don't need a massive sales team to start; 1-2 product specialists who reach out to high-usage accounts will dramatically increase conversion rates.
+Content: Elena Verna: Monetization strategy in PLG hinges on setting the right paywall boundaries. Never put your core habit-loop features behind a paywall. If users can't form a daily habit, they will churn before ever seeing your upgrade screen. Put scale boundaries (e.g., number of seats, volume of data, enterprise security controls like SOC2 compliance and SSO) behind the paywall, not utility boundaries.
 
 (Synthesized from ingested episode transcripts).
 
-**Citations Returned (2):**
-- **Episode:** Elena Verna on PLG, Growth Loops, and B2B Monetization (Elena Verna) [00:02:15-00:07:30]
-  - **Snippet:** *"Lenny: Elena, welcome to the podcast. Let's start with Product-Led Growth (PLG) vs Sales-Led motions. How should early-stage B2B SaaS companies decide..."*
+**Citations Returned (3):**
 - **Episode:** Elena Verna on PLG, Growth Loops, and B2B Monetization (Elena Verna) [00:07:31-00:13:45]
   - **Snippet:** *"Lenny: What metrics indicate that a PLG company is ready to layer on enterprise sales?
 
 Elena Verna: Look for three specific signals: First, account-l..."*
+- **Episode:** Elena Verna on PLG, Growth Loops, and B2B Monetization (Elena Verna) [00:02:15-00:07:30]
+  - **Snippet:** *"Lenny: Elena, welcome to the podcast. Let's start with Product-Led Growth (PLG) vs Sales-Led motions. How should early-stage B2B SaaS companies decide..."*
+- **Episode:** Elena Verna on PLG, Growth Loops, and B2B Monetization (Elena Verna) [00:13:46-00:19:20]
+  - **Snippet:** *"Elena Verna: Monetization strategy in PLG hinges on setting the right paywall boundaries. Never put your core habit-loop features behind a paywall. If..."*
 
 ---
 

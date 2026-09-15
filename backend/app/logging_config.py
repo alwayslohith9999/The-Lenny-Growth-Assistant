@@ -4,6 +4,7 @@ import time
 from datetime import datetime, timezone
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
+from app.config import settings
 
 
 class JSONFormatter(logging.Formatter):
@@ -24,9 +25,9 @@ class JSONFormatter(logging.Formatter):
 def setup_structured_logging():
     handler = logging.StreamHandler()
     handler.setFormatter(JSONFormatter())
-    
+
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
+    root_logger.setLevel(getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
     root_logger.handlers = [handler]
 
 

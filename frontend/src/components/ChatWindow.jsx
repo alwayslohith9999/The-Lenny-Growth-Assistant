@@ -1,4 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+
+const STARTER_PROMPTS = [
+  "What does Elena Verna recommend for building sustainable B2B PLG funnels?",
+  "How does Brian Balfour explain the difference between growth loops and traditional funnels?",
+  "What are Shreyas Doshi's key principles on product thinking and high-agency PM execution?",
+  "Explain usage-based pricing versus seat-based pricing triggers."
+]
 
 export function ChatWindow({
   messages,
@@ -7,10 +16,12 @@ export function ChatWindow({
   onOpenArtifact,
   activeProvider,
   onProviderChange,
-  isLoading
+  isLoading,
+  onToggleSidebar
 }) {
   const [inputText, setInputText] = useState('')
   const [expandedCitations, setExpandedCitations] = useState({})
+  const [copiedMsgId, setCopiedMsgId] = useState(null)
   const feedRef = useRef(null)
 
   useEffect(() => {
@@ -37,10 +48,36 @@ export function ChatWindow({
     setExpandedCitations((prev) => ({ ...prev, [msgId]: !prev[msgId] }))
   }
 
+  const handleCopyMessage = async (msgId, text) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedMsgId(msgId)
+      setTimeout(() => setCopiedMsgId(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy text:', err)
+    }
+  }
+
+  // Use the original user question as the essay retrieval query,
+  // not the assistant's long markdown answer.
+  const getEssayPrompt = (assistantIdx) => {
+    for (let i = assistantIdx - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') return messages[i].content
+    }
+    return messages[assistantIdx].content
+  }
+
   return (
     <div className="chat-window">
       <header className="chat-header">
         <div className="chat-title-group">
+          <button
+            className="mobile-hamburger-btn"
+            onClick={onToggleSidebar}
+            aria-label="Toggle navigation sidebar"
+          >
+            ☰
+          </button>
           <h2>Lenny Growth Assistant</h2>
         </div>
 
@@ -50,6 +87,7 @@ export function ChatWindow({
             id="provider-select"
             value={activeProvider}
             onChange={(e) => onProviderChange(e.target.value)}
+            aria-label="Select active LLM provider"
           >
             <option value="anthropic">Anthropic (Claude 3.5)</option>
             <option value="openai">OpenAI (GPT-4o)</option>
@@ -58,43 +96,111 @@ export function ChatWindow({
         </div>
       </header>
 
-      <div className="messages-feed" ref={feedRef}>
+      <div
+        className="messages-feed"
+        ref={feedRef}
+        role="log"
+        aria-live="polite"
+        aria-label="Conversation messages"
+      >
         {messages.length === 0 ? (
-          <div style={{ textAlign: 'center', margin: 'auto', color: '#94a3b8' }}>
-            <h3 style={{ fontSize: '1.4rem', color: '#fff', marginBottom: '0.5rem' }}>
-              Ask Lenny's Podcast Knowledge Base
-            </h3>
-            <p style={{ maxWidth: '480px', margin: '0 auto' }}>
-              Get citable growth frameworks from Elena Verna, Brian Balfour, Shreyas Doshi, and more, or generate a Ship 30 for 30 essay.
-            </p>
+          <div className="empty-state-container">
+            <div className="empty-state-hero">
+              <span className="hero-badge">Curated Transcript Knowledge Base</span>
+              <h3>Ask Lenny's Podcast Insights</h3>
+              <p>
+                Query battle-tested growth frameworks from Elena Verna, Brian Balfour,
+                Shreyas Doshi, and more, or generate a Ship 30 for 30 executive essay.
+              </p>
+            </div>
+
+            <div className="starter-prompts-grid">
+              {STARTER_PROMPTS.map((prompt, idx) => (
+                <button
+                  key={idx}
+                  className="starter-prompt-card"
+                  onClick={() => onSendMessage(prompt)}
+                  disabled={isLoading}
+                >
+                  <span className="prompt-icon">💡</span>
+                  <span className="prompt-text">{prompt}</span>
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
-          messages.map((m) => {
+          messages.map((m, idx) => {
             const citations = m.metadata?.citations || []
             const artifact = m.metadata?.artifact
-            const isExpanded = expandedCitations[m.id]
+            const isExpanded = !!expandedCitations[m.id]
+            const isAssistant = m.role === 'assistant'
+            const isCopied = copiedMsgId === m.id
+            const latency = m.metadata?.latency_ms
+            const providerUsed = m.metadata?.provider_used
 
             return (
               <div key={m.id} className={`message-row ${m.role}`}>
                 <div className="message-bubble">
-                  {m.content}
+                  <div className="message-top-bar">
+                    <span className="message-role-label">
+                      {isAssistant ? '⚡ Assistant' : '👤 You'}
+                    </span>
+                    {isAssistant && (
+                      <div className="message-meta-tags">
+                        {providerUsed && (
+                          <span className="meta-tag provider-tag" title="Provider used">
+                            {providerUsed}
+                          </span>
+                        )}
+                        {latency !== undefined && latency > 0 && (
+                          <span className="meta-tag latency-tag" title="Generation latency">
+                            {latency}ms
+                          </span>
+                        )}
+                        <button
+                          className="copy-msg-btn"
+                          onClick={() => handleCopyMessage(m.id, m.content)}
+                          aria-label="Copy message text"
+                          title="Copy message"
+                        >
+                          {isCopied ? '✓ Copied' : '📋 Copy'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="markdown-body">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        a: ({ node, ...props }) => (
+                          <a {...props} target="_blank" rel="noreferrer" />
+                        )
+                      }}
+                    >
+                      {m.content}
+                    </ReactMarkdown>
+                  </div>
 
                   {artifact && (
                     <div className="message-actions">
                       <button
-                        className="action-chip"
+                        className="action-chip artifact-chip"
                         onClick={() => onOpenArtifact(artifact)}
+                        aria-label={`Open generated artifact: ${artifact.title}`}
                       >
                         📄 Open Artifact: {artifact.title}
                       </button>
                     </div>
                   )}
 
-                  {m.role === 'assistant' && !artifact && (
+                  {isAssistant && !artifact && (
                     <div className="message-actions">
                       <button
-                        className="action-chip"
-                        onClick={() => onGenerateEssay(m.content)}
+                        className="action-chip essay-chip"
+                        onClick={() => onGenerateEssay(getEssayPrompt(idx))}
+                        disabled={isLoading}
+                        aria-label="Generate Ship 30 for 30 essay from this answer"
                       >
                         ✍️ Generate Ship 30 Essay
                       </button>
@@ -102,30 +208,47 @@ export function ChatWindow({
                   )}
 
                   {citations.length > 0 && (
-                    <div className="citations-box">
+                    <div className="citations-box" aria-label="Grounded source citations">
                       <div
                         className="citations-header"
-                        style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
                         onClick={() => toggleCitations(m.id)}
+                        role="button"
+                        tabIndex={0}
+                        aria-expanded={isExpanded}
+                        aria-label={`${citations.length} Grounded Source Citations`}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            toggleCitations(m.id)
+                          }
+                        }}
                       >
                         <span>📚 {citations.length} Grounded Source Citations</span>
-                        <span>{isExpanded ? '▲' : '▼'}</span>
+                        <span aria-hidden="true">{isExpanded ? '▲' : '▼'}</span>
                       </div>
 
-                      {isExpanded &&
-                        citations.map((c, idx) => (
-                          <div key={idx} className="citation-card">
-                            <a
-                              href={c.episode_url || '#'}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="citation-link"
-                            >
-                              {c.episode_title} ({c.guest_name}) [{c.timestamp_start}-{c.timestamp_end}]
-                            </a>
-                            <p className="citation-snippet">{c.content_snippet}</p>
-                          </div>
-                        ))}
+                      {isExpanded && (
+                        <div className="citations-content">
+                          {citations.map((c, cIdx) => (
+                            <div key={cIdx} className="citation-card">
+                              <a
+                                href={c.episode_url || '#'}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="citation-link"
+                              >
+                                {c.episode_title} ({c.guest_name}) [{c.timestamp_start}-{c.timestamp_end}]
+                              </a>
+                              {c.score !== undefined && (
+                                <span className="citation-score">
+                                  Match: {Math.round(c.score * 100)}%
+                                </span>
+                              )}
+                              <p className="citation-snippet">{c.content_snippet}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -136,9 +259,10 @@ export function ChatWindow({
 
         {isLoading && (
           <div className="message-row assistant">
-            <div className="message-bubble" style={{ color: '#94a3b8', display: 'flex', gap: '8px' }}>
-              <span>Thinking & Retrieving Transcripts</span>
-              <span className="pulse-dots">...</span>
+            <div className="message-bubble thinking-bubble" role="status" aria-label="Loading response">
+              <span className="thinking-spinner" aria-hidden="true">⚡</span>
+              <span>Retrieving podcast transcripts & synthesizing...</span>
+              <span className="pulse-dots" aria-hidden="true">...</span>
             </div>
           </div>
         )}
@@ -153,9 +277,15 @@ export function ChatWindow({
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={1}
+            aria-label="Message input"
           />
-          <button type="submit" className="send-btn" disabled={isLoading || !inputText.trim()}>
-            Send
+          <button
+            type="submit"
+            className="send-btn"
+            disabled={isLoading || !inputText.trim()}
+            aria-label="Send message"
+          >
+            {isLoading ? '...' : 'Send'}
           </button>
         </form>
       </div>

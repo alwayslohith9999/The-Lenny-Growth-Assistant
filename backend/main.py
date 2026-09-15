@@ -1,8 +1,3 @@
-from fastapi import FastAPI
-
-app = FastAPI(title="Lenny Growth Assistant Backend")
-
-
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
+# Entry point redirector — all routes live in app/main.py
+# Used by: uvicorn main:app
+from app.main import app  # noqa: F401

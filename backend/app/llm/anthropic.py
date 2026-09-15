@@ -8,9 +8,11 @@ logger = logging.getLogger(__name__)
 
 
 class AnthropicProvider(BaseLLMProvider):
+    """LLM provider implementation for Anthropic Messages API."""
+
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or settings.ANTHROPIC_API_KEY
-        self.model = model or settings.LLM_MODEL or "claude-3-5-sonnet-20241022"
+        self.model = model or settings.ANTHROPIC_MODEL or settings.LLM_MODEL or "claude-3-5-sonnet-20241022"
         if not self.api_key:
             raise ValueError("Anthropic API key is not configured.")
 

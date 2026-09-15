@@ -8,9 +8,11 @@ logger = logging.getLogger(__name__)
 
 
 class OpenAIProvider(BaseLLMProvider):
+    """LLM provider implementation for OpenAI chat completion APIs."""
+
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or settings.OPENAI_API_KEY
-        self.model = model or settings.LLM_MODEL or "gpt-4o"
+        self.model = model or settings.OPENAI_MODEL or "gpt-4o"
         if not self.api_key:
             raise ValueError("OpenAI API key is not configured.")
 
